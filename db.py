@@ -30,6 +30,7 @@ class DBTable(db_api.DBTable):
         self.name = name
         self.fields = fields
         self.key_field_name = key_field_name
+
         path_file = os.path.join('db_files', self.table_name + '.db')
         table_file = shelve.open(path_file)
         table_file.close()
@@ -75,7 +76,7 @@ class DataBase(db_api.DataBase):
         return self.tables.get(table_name)
 
     def delete_table(self, table_name):
-
+        os.remove(db_api.DB_ROOT.joinpath(f"{table_name}.dir"))
 
     def get_tables_names(self):
         return list(self.tables.keys())
