@@ -74,11 +74,11 @@ class DataBase(db_api.DataBase):
     def get_table(self, table_name):
         return self.tables.get(table_name)
 
-    def delete_table(self, table_name: str) -> None:
-        raise NotImplementedError
+    def delete_table(self, table_name):
 
-    def get_tables_names(self) -> List[Any]:
-        raise NotImplementedError
+
+    def get_tables_names(self):
+        return list(self.tables.keys())
 
     def query_multiple_tables(self, tables: List[str], fields_and_values_list: List[List[SelectionCriteria]], fields_to_join_by: List[str]) -> List[Dict[str, Any]]:
         raise NotImplementedError
