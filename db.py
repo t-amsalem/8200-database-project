@@ -72,18 +72,43 @@ class DBTable(db_api.DBTable):
             table.close()
 
     def delete_records(self, criteria):
-        for key in criteria:
-            self.delete_record(key)
+        table = shelve.open(os.path.join('db_files', self.name + '.db'), writeback=True)
+        try:
+            for cond in criteria:
+                for item in table:
+                    if table[item][cond.field_name] + cond.operator + cond.value:
+                        self.delete_record(item)
+        finally:
+            table.close()
 
     def get_record(self, key):
-        table = shelve.open(os.path.join('db_files', self.name + '.db'), writeback=True)
-        if key is None or key not in table:
+        if key is None:
             raise ValueError
-        else:
-            return table[key]
 
-    def update_record(self, key: Any, values: Dict[str, Any]):
-        raise NotImplementedError
+        table = shelve.open(os.path.join('db_files', self.name + '.db'), writeback=True)
+        try:
+            if key not in table:
+                raise ValueError
+            else:
+                temp = table[key]
+                table.close()
+                return temp
+        finally:
+            table.close()
+
+    def update_record(self, key, values):
+        if key is None:
+            raise ValueError
+
+        table = shelve.open(os.path.join('db_files', self.name + '.db'), writeback=True)
+        try:
+            if key not in table:
+                raise ValueError
+            else:
+                table[key] = values
+        finally:
+            table.close()
+
 
     def query_table(self, criteria: List[SelectionCriteria]):
         raise NotImplementedError
