@@ -5,6 +5,8 @@ import db_api
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 
+table_list = []
+
 @dataclass_json
 @dataclass
 class DBField(db_api.DBField):
@@ -89,9 +91,10 @@ class DataBase(db_api.DataBase):
         table_file = shelve.open(path_file)
         table_file[key_field_name] = value
         table_file.close()
+        table_list.append(table_name)
 
-    def num_tables(self) -> int:
-        raise NotImplementedError
+    def num_tables(self):
+        return len(table_list)
 
     def get_table(self, table_name: str) -> DBTable:
         raise NotImplementedError
