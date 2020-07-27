@@ -71,12 +71,16 @@ class DBTable(db_api.DBTable):
         finally:
             table.close()
 
+    def delete_records(self, criteria):
+        for key in criteria:
+            self.delete_record(key)
 
-    def delete_records(self, criteria: List[SelectionCriteria]):
-        raise NotImplementedError
-
-    def get_record(self, key: Any):
-        raise NotImplementedError
+    def get_record(self, key):
+        table = shelve.open(os.path.join('db_files', self.name + '.db'), writeback=True)
+        if key is None or key not in table:
+            raise ValueError
+        else:
+            return table[key]
 
     def update_record(self, key: Any, values: Dict[str, Any]):
         raise NotImplementedError
