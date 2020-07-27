@@ -34,20 +34,40 @@ class DBTable(db_api.DBTable):
         path_file = os.path.join('db_files', self.table_name + '.db')
         table = shelve.open(path_file)
         values = {}
+        table[key_field_name] = values
         for field in fields:
             values[field] = ""
         table.close()
 
     def count(self):
-        table = shelve.open(os.path.join('db_files', self.name + '.db'), writeback=True)
+        table = shelve.open(os.path.join('db_files', self.name + '.db'))
         try:
-            num_rows = len(table[self.name].keys())
+            num_rows = len(table.keys())
+            # [self.name]
         finally:
             table.close()
         return num_rows
 
-    def insert_record(self, values: Dict[str, Any]):
-        raise NotImplementedError
+    def insert_record(self, values):
+        primary_key = None
+        if values is None or len(values) > len(self.fields):
+            raise ValueError
+
+        for val in values:
+            if val == self.key_field_name:
+                primary_key = values[val]
+                continue
+            else:
+                raise ValueError
+
+        table = shelve.open(os.path.join('db_files', self.name + '.db'), writeback=True)
+        try:
+            if primary_key not in table:
+                table[primary_key] = values
+            else:
+                raise ValueError
+        finally:
+            table.close()
 
     def delete_record(self, key: Any):
         raise NotImplementedError
