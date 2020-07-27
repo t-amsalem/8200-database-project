@@ -32,11 +32,19 @@ class DBTable(db_api.DBTable):
         self.key_field_name = key_field_name
 
         path_file = os.path.join('db_files', self.table_name + '.db')
-        table_file = shelve.open(path_file)
-        table_file.close()
+        table = shelve.open(path_file)
+        values = {}
+        for field in fields:
+            values[field] = ""
+        table.close()
 
     def count(self):
-        raise NotImplementedError
+        table = shelve.open(os.path.join('db_files', self.name + '.db'), writeback=True)
+        try:
+            num_rows = len(table[self.name].keys())
+        finally:
+            table.close()
+        return num_rows
 
     def insert_record(self, values: Dict[str, Any]):
         raise NotImplementedError
