@@ -66,8 +66,11 @@ class DataBase(db_api.DataBase):
     tables = {}
 
     def create_table(self, table_name, fields, key_field_name):
-        self.tables[table_name] = DBTable(table_name, fields, key_field_name)
-        return self.tables[table_name]
+        if table_name not in self.tables:
+            self.tables[table_name] = DBTable(table_name, fields, key_field_name)
+            return self.tables[table_name]
+        else:
+            raise ValueError
 
     def num_tables(self):
         return len(self.tables)
@@ -76,7 +79,11 @@ class DataBase(db_api.DataBase):
         return self.tables.get(table_name)
 
     def delete_table(self, table_name):
-        os.remove(db_api.DB_ROOT.joinpath(f"{table_name}.dir"))
+        if table_name in self.tables:
+            os.remove(db_api.DB_ROOT.joinpath(f"{table_name}.dir"))
+            self.tables.pop(table_name)
+        else:
+            raise ValueError
 
     def get_tables_names(self):
         return list(self.tables.keys())
