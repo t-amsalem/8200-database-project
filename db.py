@@ -139,8 +139,17 @@ class DBTable(db_api.DBTable):
             table.close()
         return list_satisfies_cond
 
-    def create_index(self, field_to_index: str) -> None:
-        raise NotImplementedError
+    def create_index(self, field_to_index):
+        if field_to_index not in [field.name for field in self.fields]:
+            raise ValueError
+        if field_to_index == self.key_field_name:
+            return
+        with shelve.open(f'{self.name}_{field_to_index}_index', writeback=True) as index_file:
+            table = shelve.open(os.path.join('db_files', self.name), writeback=True)
+            all_instances = {}
+            for key, value in table.items():
+                all_instances.setdefault(value[field_to_index], set()).add(key)
+            index_file[field_to_index] = all_instances
 
 
 @dataclass_json
@@ -157,9 +166,7 @@ class DataBase(db_api.DataBase):
             self.tables[table_name] = DBTable(table_name, fields, key_field_name)
             with shelve.open('DB', writeback=True) as db:
                 db[table_name] = [fields, key_field_name]
-            return self.tables[table_name]
-        else:
-            raise ValueError("bad index")
+        return self.tables[table_name]
 
     def num_tables(self):
         return len(self.tables)
